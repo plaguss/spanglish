@@ -9,6 +9,8 @@ It uses :hugs: Transfomers with [Helsinki-NLP/opus-mt-en-es](https://huggingface
 
 The app is intented to be run from a docker container, take into account the dependencies make it BIG (3GB plus).
 
+It builds from the base ray [docker image](https://hub.docker.com/r/rayproject/ray).
+
 ### Building the container
 
 ```console
