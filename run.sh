@@ -1,0 +1,1 @@
+docker build -t spanglish . && docker run -p 8000:8000 -it spanglish
