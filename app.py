@@ -6,30 +6,36 @@ ray serve.
 
 from starlette.requests import Request
 from transformers import pipeline
-
+from typing import Any
 from ray import serve
+from fastapi import FastAPI
 
 MODEL_NAME = "Helsinki-NLP/opus-mt-en-es"
+
+app = FastAPI()
 
 
 # 1: Define a Ray Serve deployment.
 @serve.deployment(route_prefix="/")
+@serve.ingress(app)
 class SpanglishDeployment:
     def __init__(self):
         # Initialize model state.
         self.pipe = pipeline("translation", model=MODEL_NAME)
 
+    @app.get("/single")
     def predict_one(self, text: str) -> str:
         return self.pipe(text)[0]["translation_text"]
 
     @serve.batch(max_batch_size=4)
-    async def predict_batch(self, inputs: list[str]) -> list[str]:
-        results = self.pipe(inputs)
+    async def _handle_batch(self, texts: list[str]) -> dict[str, list[str]]:
+        results = self.pipe(texts)
         return [r["translation_text"] for r in results]
 
-    async def __call__(self, request: Request) -> dict[str, str]:
-        return await self.predict_batch(request.query_params["text"])
-        # return {"translated": self._predict(request.query_params["text"])}
+    @app.get("/batched")
+    async def predict_batch(self, texts):
+        # FIXME: I cannot make it work typing this function
+        return await self._handle_batch(texts)
 
 
 translator = SpanglishDeployment.bind()
