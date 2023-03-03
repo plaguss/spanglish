@@ -4,10 +4,11 @@ ray serve.
 """
 
 
-from transformers import pipeline
-from ray import serve
-from fastapi import FastAPI
 import os
+
+from fastapi import FastAPI
+from ray import serve
+from transformers import pipeline
 
 MODEL_NAME = os.environ.get("MODEL_NAME", "Helsinki-NLP/opus-mt-en-es")
 
