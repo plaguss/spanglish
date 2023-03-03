@@ -1,5 +1,7 @@
 services:
   app:
+    env_file:
+      - model-name.env
     build: .
     ports:
       - '8000:8000'
