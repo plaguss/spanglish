@@ -5,41 +5,43 @@ This repo contains an app to translate text from english to spanish. Its an api 
 
 It uses :hugs: Transfomers with [Helsinki-NLP/opus-mt-en-es](https://huggingface.co/Helsinki-NLP/opus-mt-en-es) model, and [Ray Serve](https://docs.ray.io/en/latest/serve/index.html) for model serving.
 
-## Deploy with docker
+## Deployment
+
+### Docker
 
 The app is intented to be run from a docker container, take into account the dependencies make it BIG (3GB plus).
 
 It builds from the base ray [docker image](https://hub.docker.com/r/rayproject/ray).
 
-### Building the container
+#### Using docker-compose
+
+Build and run the app:
+
+```console
+docker compose up --build
+```
+
+And stop the app:
+
+```console
+docker compose down
+```
+
+Or directly from docker, build:
 
 ```console
 docker build -t spanglish .
 ```
 
-### Running
+Run:
 
 ```console
-docker run -p 8000:8000 -it spanglish
+docker run -p 8000:8000 -it --env-file=model-name.env spanglish
 ```
 
-### Send requests
+### Local
 
-Once the container is running (it may take a while, the server needs some time to be ready).
-
-From a different console, check it works using python's requests:
-
-```python
->>> import json
->>> import requests
->>> payload = json.dumps(["Hello world one", "hello world two"])
->>> print(requests.get("http://localhost:8000/", params={"text": payload}).json())
-['Hola mundo uno', 'Hola mundo dos']
-```
-
-## Local deployment
-
-The app can be started without using docker. Its tested with python 3.10.7 (ray currently fails with python 3.11).
+We can also start the app without docker. Its tested with python 3.10.7 (ray currently fails with python 3.11).
 
 Install the requirements (inside a virtual environment):
 
@@ -53,28 +55,32 @@ And start the service:
 serve run app:translator
 ```
 
-Once the service is ready listening, just send the requests as in the Docker example.
+Once the service is ready listening (you should see the following message: *Deployed Serve app successfully*), we can start sending requests.
 
+## Send requests
 
-## Next steps
+Once the container is running we are ready to test it.
 
-- Use FastAPI to make it more general.
-    - Add two endpoints, one for a single piece of text.
-    - a second (the current one) to allow processing a batch of texts.
-- Allow passing the model name as argument to the container.
+There are two endpoints, one for a single text:
 
-<!-- ## Deploy with docker compose
-
-The final image is **BIG**.
-
-Start the service:
-
-```console
-docker compose up --build
+```python
+>>> import json
+>>> import requests
+>>> payload = "hello world"
+>>> requests.get("http://localhost:8000/single", params={"text": payload}).json()
+'Hola mundo'
 ```
 
-Stop it:
+And one for a batch of texts (see the [ray batching](https://docs.ray.io/en/latest/serve/performance.html#request-batching) docs for more info):
 
-```console
-docker compose down
-``` -->
+```python
+>>> import json
+>>> import requests
+>>> payload = json.dumps(["hello", "world", "one", "two"])
+>>> requests.get("http://localhost:8000/batched", params={"text": payload}).json()
+'["hola", "mundo", "uno", "dos"]'
+```
+
+## Notes
+
+Even though the app has been created for translating texts from english to spanish, the 🤗 Transformers API makes it easily interchangeable. For this reason, the model name can be modified via environment variable, updating the [`model-name.env`](model-name.env) file, take a look at the [Helsinki NLP models](https://huggingface.co/Helsinki-NLP) for alternatives!
