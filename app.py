@@ -4,18 +4,16 @@ ray serve.
 """
 
 
-from starlette.requests import Request
 from transformers import pipeline
-from typing import Any
 from ray import serve
 from fastapi import FastAPI
+import os
 
-MODEL_NAME = "Helsinki-NLP/opus-mt-en-es"
+MODEL_NAME = os.environ.get("MODEL_NAME", "Helsinki-NLP/opus-mt-en-es")
 
 app = FastAPI()
 
 
-# 1: Define a Ray Serve deployment.
 @serve.deployment(route_prefix="/")
 @serve.ingress(app)
 class SpanglishDeployment:
@@ -25,6 +23,7 @@ class SpanglishDeployment:
 
     @app.get("/single")
     def predict_one(self, text: str) -> str:
+        """Takes a single string as input."""
         return self.pipe(text)[0]["translation_text"]
 
     @serve.batch(max_batch_size=4)
@@ -33,8 +32,8 @@ class SpanglishDeployment:
         return [r["translation_text"] for r in results]
 
     @app.get("/batched")
-    async def predict_batch(self, texts):
-        # FIXME: I cannot make it work typing this function
+    async def predict_batch(self, texts: str) -> str:
+        """Takes a json encoded list of strings as input."""
         return await self._handle_batch(texts)
 
 
