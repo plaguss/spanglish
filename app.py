@@ -28,7 +28,7 @@ class SpanglishDeployment:
         return self.pipe(text)[0]["translation_text"]
 
     @serve.batch(max_batch_size=4)
-    async def _handle_batch(self, texts: list[str]) -> dict[str, list[str]]:
+    async def _handle_batch(self, texts: list[str]) -> str:
         results = self.pipe(texts)
         return [r["translation_text"] for r in results]
 
