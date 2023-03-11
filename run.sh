@@ -1,1 +1,1 @@
-docker build -t spanglish . && docker run -p 8000:8000 -it spanglish
+docker build -t spanglish . && docker run -p 8000:8000 -it --env-file=model-name.env spanglish
