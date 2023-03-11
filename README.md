@@ -77,7 +77,7 @@ And one for a batch of texts (see the [ray batching](https://docs.ray.io/en/late
 >>> import json
 >>> import requests
 >>> payload = json.dumps(["hello", "world", "one", "two"])
->>> requests.get("http://localhost:8000/batched", params={"text": payload}).json()
+>>> requests.get("http://localhost:8000/batched", params={"texts": payload}).json()
 '["hola", "mundo", "uno", "dos"]'
 ```
 
